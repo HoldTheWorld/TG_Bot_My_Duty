@@ -1,0 +1,27 @@
+{
+  "name": "my_duty_bot",
+  "version": "1.0.0",
+  "description": "telegram bot for tracking your activities' time",
+  "main": "main.js",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon main.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HoldTheWorld/My_duty_bot.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/HoldTheWorld/My_duty_bot/issues"
+  },
+  "homepage": "https://github.com/HoldTheWorld/My_duty_bot#readme",
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "json-server": "^0.17.1",
+    "node-telegram-bot-api": "^0.61.0",
+    "nodemon": "^2.0.20"
+  }
+}

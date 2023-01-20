@@ -1,0 +1,25 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "user_id": "nikname_from_tg"
+    }
+  ],
+  "tasks": [
+    {
+      "id": 1,
+      "user_id": "nikname_from_tg",
+      "task_name": "study English"
+    }
+  ],
+  "timing": [
+    {
+      "id": 1,
+      "task_id": "",
+      "start_date": "",
+      "finish_date": "",
+      "start_time": "",
+      "finish_time": ""
+    }
+  ]
+}

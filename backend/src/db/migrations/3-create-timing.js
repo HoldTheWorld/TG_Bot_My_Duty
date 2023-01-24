@@ -1,7 +1,6 @@
-'use strict';
-/** @type {import('sequelize-cli').Migration} */
-export async function up(queryInterface, Sequelize) {
-  await queryInterface.createTable('Timings', {
+module.exports = {
+  up: async (queryInterface, Sequelize) => {
+    await queryInterface.createTable('Timings', {
     id: {
       allowNull: false,
       autoIncrement: true,
@@ -9,7 +8,7 @@ export async function up(queryInterface, Sequelize) {
       type: Sequelize.INTEGER
     },
     duty_id: {
-      type: Sequelize.STRING,
+      type: Sequelize.INTEGER,
       allowNull: false,
       onDelete: 'CASCADE',
       references: {
@@ -38,7 +37,8 @@ export async function up(queryInterface, Sequelize) {
       type: Sequelize.DATE
     }
   });
-}
-export async function down(queryInterface, Sequelize) {
-  await queryInterface.dropTable('Timings');
+},
+down: async (queryInterface, Sequelize) => {
+  await queryInterface.dropTable('Timings')
+},
 }

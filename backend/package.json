@@ -5,7 +5,10 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "connect": "node src/db/connectDB.js",
+    "create": "node src/db/createTables.js",
+    "drop": "node src/db/dropTables.js"
   },
   "keywords": [],
   "author": "",

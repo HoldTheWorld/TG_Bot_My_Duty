@@ -3,17 +3,14 @@
   "version": "1.0.0",
   "description": "",
   "main": "server.js",
-  "type": "module",
   "scripts": {
-    "dev": "nodemon server.js",
-    "connect": "node src/db/connectDB.js",
-    "create": "node src/db/createTables.js",
-    "drop": "node src/db/dropTables.js"
+    "dev": "nodemon server.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "babel-register": "^6.26.0",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",

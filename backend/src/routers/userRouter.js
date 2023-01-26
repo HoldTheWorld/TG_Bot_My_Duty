@@ -1,6 +1,5 @@
 const router = require('express').Router();
-// const bcrypt = require('bcrypt');
-import { User } from '../db/models';
+const { User } = require('../db/models');
 
 router.get('/', async (req, res) => {
   let users = await User.findAll({ raw: true})
@@ -8,3 +7,4 @@ router.get('/', async (req, res) => {
   console.log(users);
 });
 
+module.exports = router

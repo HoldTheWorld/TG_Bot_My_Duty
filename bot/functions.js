@@ -1,38 +1,40 @@
-
+import fetch from "node-fetch";
 import dns from 'node:dns';
 dns.setDefaultResultOrder('ipv4first');
 
 const get_User = async function(userId) {
-  console.log(userId)
-    try {
-      const response = await fetch('http://localhost:3000/users', {
+  // console.log(`http://${process.env.DB_HOST}:${process.env.DB_PORT}/users`);
+  try {
+      console.log('START request '+userId)
+      const response = await fetch(`http://${process.env.DB_HOST}:${process.env.DB_PORT}/users`, {
        credentials: 'include',
      })
      const userList = await response.json()
-     const target_user = userList.find((el) => el.user_id === userId)
-     console.log(target_user)
+     console.log('user LIST '+userList);
+     const target_user = userList.find((el) => el.user_tg_id === userId)
+     console.log('TARGET USER'+target_user)
      return target_user
     } catch (err) {
-      return new Error('no connection to db')
+      console.log(err);
     }
 }
 
 const reg_User = async function(userId) {
   let user_search = await get_User(userId)
-  console.log(user_search+'ssskskskskks')
+
   if (user_search) {
     return 11011
   } else {
-    let id = Math.random().toString(36).substr(2, 5)
     try { 
-      const response = await fetch('http://localhost:3000/users', {
+      console.log('try to post');
+      const response = await fetch(`http://${process.env.DB_HOST}:${process.env.DB_PORT}/users/register`, {
            method: 'POST', 
            credentials: 'include',
            headers: {
             'Content-Type': 'application/json',
             },
             body: JSON.stringify({ 
-              id, userId
+              user_tg_id: userId
             })
          })
          if (response.ok) {

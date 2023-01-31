@@ -48,5 +48,40 @@ const reg_User = async function(userId) {
   }
 }
 
-export { get_User, reg_User }
+const get_Duties = async function(userId, id) {
+    try {
+      const response = await fetch(`http://${process.env.DB_HOST}:${process.env.DB_PORT}/duties/${id}`, {
+       credentials: 'include',
+     })
+     const dutyList = await response.json()
+     return dutyList
+    //  const target_user = userList.find((el) => el.user_tg_id === userId)
+    //  console.log('TARGET USER'+target_user)
+    //  return target_user
+    } catch (err) {
+      console.log(err);
+    }
+}
+
+const add_Duty = async function(userId, id, dutyName) {
+  try {
+    const response = await fetch(`http://${process.env.DB_HOST}:${process.env.DB_PORT}/duties/${id}`, {
+      method: 'POST', 
+      credentials: 'include',
+      headers: {
+       'Content-Type': 'application/json',
+       },
+       body: JSON.stringify({ 
+         user_id: id,
+         duty_name: dutyName
+       })
+    })
+    const newDuty = await response.json()
+    return newDuty
+  } catch(err) {
+    console.log(err);
+  }
+}
+
+export { get_User, reg_User, get_Duties, add_Duty }
 

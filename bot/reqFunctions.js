@@ -2,27 +2,28 @@ import fetch from "node-fetch";
 import dns from 'node:dns';
 dns.setDefaultResultOrder('ipv4first');
 
-const get_User = async function(userId) {
+const req_get_User = async function(userId) {
   // console.log(`http://${process.env.DB_HOST}:${process.env.DB_PORT}/users`);
   try {
       console.log('START request '+userId)
-      const response = await fetch(`http://${process.env.DB_HOST}:${process.env.DB_PORT}/users`, {
+      const response = await fetch(`http://${process.env.DB_HOST}:${process.env.DB_PORT}/users/${userId}`, {
        credentials: 'include',
      })
-     const userList = await response.json()
-     console.log('user LIST '+userList);
-     const target_user = userList.find((el) => el.user_tg_id === userId)
-     console.log('TARGET USER'+target_user)
-     return target_user
+     const userResult = await response.json()
+     console.log('user LIST '+userResult);
+    //  const target_user = userList.find((el) => el.user_tg_id === userId)
+    //  console.log('TARGET USER'+target_user)
+    console.log(userResult);
+     return userResult
     } catch (err) {
       console.log(err);
     }
 }
 
-const reg_User = async function(userId) {
-  let user_search = await get_User(userId)
+const req_reg_User = async function(userId) {
+  let user_search = await req_get_User(userId)
 
-  if (user_search) {
+  if (user_search.length) {
     return 11011
   } else {
     try { 
@@ -48,24 +49,23 @@ const reg_User = async function(userId) {
   }
 }
 
-const get_Duties = async function(userId, id) {
+const req_get_Duties = async function(userId, id) {
     try {
-      const response = await fetch(`http://${process.env.DB_HOST}:${process.env.DB_PORT}/duties/${id}`, {
-       credentials: 'include',
+      const response = await fetch(`http://${process.env.DB_HOST}:${process.env.DB_PORT}/duties/get/${id}`, {
+        method: 'GET', 
+        credentials: 'include',
      })
      const dutyList = await response.json()
      return dutyList
-    //  const target_user = userList.find((el) => el.user_tg_id === userId)
-    //  console.log('TARGET USER'+target_user)
-    //  return target_user
     } catch (err) {
       console.log(err);
     }
+    return null
 }
 
-const add_Duty = async function(userId, id, dutyName) {
+const req_add_Duty = async function(userId, id, dutyName) {
   try {
-    const response = await fetch(`http://${process.env.DB_HOST}:${process.env.DB_PORT}/duties/${id}`, {
+    const response = await fetch(`http://${process.env.DB_HOST}:${process.env.DB_PORT}/duties`, {
       method: 'POST', 
       credentials: 'include',
       headers: {
@@ -83,5 +83,5 @@ const add_Duty = async function(userId, id, dutyName) {
   }
 }
 
-export { get_User, reg_User, get_Duties, add_Duty }
+export { req_get_User, req_reg_User, req_get_Duties, req_add_Duty }
 

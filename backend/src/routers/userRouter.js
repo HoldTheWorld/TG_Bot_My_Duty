@@ -1,20 +1,9 @@
 const router = require('express').Router();
 const { User } = require('../db/models');
 
-router.get('/', async (req, res) => {
-  console.log('get request');
-  try {
-    let users = await User.findAll({ raw: true})
-    res.json(users)
-    console.log(users);
-  } catch(err) {
-    console.log(err);
-  }
-});
 
 router.post('/register', async (req, res) => {
   console.log('POST request');
-  console.log(req.body);
   // const { user_tg_id } = req.body
   try {
     const newUser = await User.create({...req.body})
@@ -25,5 +14,21 @@ router.post('/register', async (req, res) => {
   }
 });
 
+router.get('/:tgId', async (req, res) => {
+  console.log('get request');
+  try {
+    let user = await User.findAll({ 
+      raw: true,
+      where: {
+        user_tg_id: req.params.tgId
+      }
+    })
+    console.log('RESULT get request');
+    res.json(user)
+    console.log(user);
+  } catch(err) {
+    console.log(err);
+  }
+});
 
 module.exports = router

@@ -14,9 +14,9 @@ app.use(cors({
   credentials: true,
 }));
 
-app.get('/', (req, res) => {
-  res.send('hello ! ')
-})
+// app.get('/', (req, res) => {
+//   res.send('hello ! ')
+// })
 
 app.use('/users', userRouter);
 app.use('/duties', dutyRouter);

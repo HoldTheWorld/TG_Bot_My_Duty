@@ -37,5 +37,27 @@ router.get('/get/:id', async (req, res) => {
   }
 });
 
+//delete 
+router.delete('/delete/:id', async(req, res) => {
+  console.log('ща будем удалять #' + req.params.id);
+  console.log(req.params);
+  try {
+    let result = await Duty.destroy({
+      where: {
+        id: req.params.id
+      }
+    })
+
+    if (result > 0) {
+      res.sendStatus(200)
+    } else {
+      res.sendStatus(400)
+    }
+
+  } catch(err) {
+    console.log(err);
+  }
+})
+
 
 module.exports = router

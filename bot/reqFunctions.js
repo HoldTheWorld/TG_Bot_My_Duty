@@ -21,11 +21,11 @@ const req_get_User = async function(userId) {
 }
 
 const req_reg_User = async function(userId) {
-  let user_search = await req_get_User(userId)
+  // let user_search = await req_get_User(userId)
 
-  if (user_search.length) {
-    return 11011
-  } else {
+  // if (user_search.length) {
+  //   return 11011
+  // } else {
     try { 
       console.log('try to post');
       const response = await fetch(`http://${process.env.DB_HOST}:${process.env.DB_PORT}/users/register`, {
@@ -38,15 +38,12 @@ const req_reg_User = async function(userId) {
               user_tg_id: userId
             })
          })
-         if (response.ok) {
-          return 12012
-         } else {
-          return 13013
-         }
+         console.log(response.ok);
+         return response.ok
       } catch(err) {
         return new Error('ошибка добавления контакта')
       }
-  }
+  // }
 }
 
 const req_get_Duties = async function(userId, id) {
@@ -83,5 +80,23 @@ const req_add_Duty = async function(userId, id, dutyName) {
   }
 }
 
-export { req_get_User, req_reg_User, req_get_Duties, req_add_Duty }
+const req_del_Duty = async function(dutyId) {
+  try {
+    console.log('зашли в функцию удаления')
+    const response = await fetch(`http://${process.env.DB_HOST}:${process.env.DB_PORT}/duties/delete/${dutyId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    })
+    console.log('ответ на удаление - ')
+    return response.ok
+
+  } catch(err) {
+    console.log(err);
+  }
+}
+
+export { req_get_User, req_reg_User, req_get_Duties, req_add_Duty, req_del_Duty }
 

@@ -1,8 +1,6 @@
 const router = require('express').Router();
 const { Duty } = require('../db/models');
 
-
-
 router.post('/', async (req, res) => {
   console.log('hello from DUTY');
   console.log('получили POST запрос');
@@ -18,7 +16,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-//get duties
+//get duties by user id
 router.get('/get/:id', async (req, res) => {
   console.log('hello from DUTY');
   console.log('получили GET запрос');
@@ -32,6 +30,22 @@ router.get('/get/:id', async (req, res) => {
       })
     console.log(duties);
     res.json(duties)
+  } catch(err) {
+    console.log(err);
+  }
+});
+
+//get one duty by id
+router.get('/getOne/:id', async (req, res) => {
+  try {
+    let duty = await Duty.findAll({ 
+        raw: true,
+        where: {
+          id: req.params.id
+        }
+      })
+    console.log(duty);
+    res.json(duty)
   } catch(err) {
     console.log(err);
   }

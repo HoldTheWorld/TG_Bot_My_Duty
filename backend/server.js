@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const userRouter = require('./src/routers/userRouter');
 const dutyRouter = require('./src/routers/dutyRouter');
+const timingRouter = require('./src/routers/timingRouter')
 const PORT = process.env.PORT ?? 3001;
 
 const app = express()
@@ -18,8 +19,10 @@ app.use(cors({
 //   res.send('hello ! ')
 // })
 
+http://numbersapi.com/#42
 app.use('/users', userRouter);
 app.use('/duties', dutyRouter);
+app.use('/timings', timingRouter)
 
 app.listen(PORT, () => {
   console.log(`Server up on port ${PORT}`);

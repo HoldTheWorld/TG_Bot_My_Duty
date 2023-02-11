@@ -12,11 +12,8 @@ module.exports = (sequelize, DataTypes) => {
   }
   Timing.init({
     duty_id: DataTypes.STRING,
-    start_date: DataTypes.DATEONLY,
-    finish_date: DataTypes.DATEONLY,
-    start_time: DataTypes.TIME,
-    finish_time: DataTypes.TIME
-
+    start: DataTypes.BIGINT,
+    finish: DataTypes.BIGINT,
   }, {
     sequelize,
     modelName: 'Timing',

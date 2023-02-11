@@ -1,10 +1,11 @@
 import TelegramBot from 'node-telegram-bot-api'
 import * as dotenv from 'dotenv'
+import moment from 'moment/moment.js'
 dotenv.config()
 const token = process.env.BOT_TOKEN
 const bot = new TelegramBot(token, {polling: true});
 
-import { req_get_User, req_reg_User, req_get_Duties, req_add_Duty, req_del_Duty } from "./reqFunctions.js"
+import { req_get_User, req_reg_User, req_get_Duties, req_add_Duty, req_del_Duty, req_add_Timing, req_fin_Timing, req_getOne_Duty } from "./reqFunctions.js"
 // import { help_add_Duty } from "./helpFunctions.js"
 
 let keyboardStart = [
@@ -57,7 +58,7 @@ bot.setMyCommands([
   // {command: '/showstat' , description: 'показать статистику'},
   // {command: '/deleteme' , description: 'удалить свой профиль,задачи,статистику'}
 ])
-
+moment.locale('ru')
    bot.on('text', async (msg) => {
     console.log('зашли в text');
     console.log(msg.chat.username + '  ' + msg.text );
@@ -66,11 +67,31 @@ bot.setMyCommands([
     let userTdId = msg.chat.username
     let checkUser
     let message
+    // console.log(msg.date.toString);
+    // let newDate = Date.now()
+    // console.log(newDate);
+    // console.log(Date.UTC());
+    // console.log(msg.date);
+    // const date = new Date();
+//     const date = msg.date;
+// // console.log(moment().format());
+// // console.log(moment().format('MMMM Do YYYY, h:mm:ss a'));
+// console.log(date.toLocaleString('ru-RU', {
+//   year: 'numeric',
+//   month: 'numeric',
+//   day: 'numeric',
+//   hour: '2-digit',
+//   minute: '2-digit',
+//   second: '2-digit'
+
+// }));
+console.log(moment().format('l') + ' ' + moment().format('LT'));
+// console.log(`${date.getDate()}.${String(date.getMonth() + 1).padStart(2, "0")}.${date.getFullYear()}`);
 
     try {
       checkUser = await req_get_User(userTdId)
       console.log('нашли пользователя: ' + checkUser[0].user_tg_id );
-      } catch (err) {
+    } catch (err) {
         console.log(err);
       }
 
@@ -83,7 +104,7 @@ bot.setMyCommands([
         return bot.sendMessage(chatId, `Чего желаете, ${userTdId}?`, { 
           reply_markup: {
           inline_keyboard: keyboardStart
-          }});
+        }});
       }
     }
     if (text == '/register') {
@@ -143,7 +164,9 @@ bot.on('callback_query', async (query) => {
     } catch (err) {
       console.log(err);
     }
+
     if (checkUser.length && checkUser[0].user_tg_id == userTdId) {
+      // список задач 
       if (query.data === 'dutyList') { 
         let dutyList = await req_get_Duties(userTdId, checkUser[0].id)
         console.log(dutyList);
@@ -175,6 +198,7 @@ bot.on('callback_query', async (query) => {
           show_alert: false
         })
       }
+      // добавление задач 
       if (query.data === 'addDuty') { 
         bot.sendMessage(chatId, 'Введите название задачи. Начните со слов "Я буду", например "Я буду играть на гитаре"')
        
@@ -182,6 +206,7 @@ bot.on('callback_query', async (query) => {
           show_alert: false
           })
       }
+      // выбор конкретной задачи 
       if (query.data.indexOf('chosen', 0) == 0) {
         // console.log(Number(query.data.slice(7)));
         let keyboardDutiesActions = [
@@ -215,15 +240,13 @@ bot.on('callback_query', async (query) => {
           show_alert: false
         })
       }
-
+      // удаление задачи 
       if (query.data.indexOf('delDuty',0) == 0) {
-        console.log('delete');
+        // console.log('delete');
         let response = await req_del_Duty(Number(query.data.slice(7)))
-
         if (response) {
-
           message = 'Задача бесследно удалена'
-          } else {
+        } else {
           message = 'что-то пошло не так'
           keyboardStart = []
         }
@@ -236,16 +259,25 @@ bot.on('callback_query', async (query) => {
           show_alert: false
         })
       }
-
+      // начать выполнение задачи 
       if (query.data.indexOf('strDuty',0) == 0) {
-        // console.log(Number(query.data.slice(7)));
-
-        bot.sendMessage(chatId, 'эта опция еще не готова', { 
+        let message = ''
+        let date = Date.now();
+        let result = await req_add_Timing(Number(query.data.slice(7)), date)
+        let thisDuty = await req_getOne_Duty(Number(query.data.slice(7)))
+          console.log(thisDuty);
+          console.log(result);
+        if (result && thisDuty.length) {
+            message = `Вы начали выполнение задачи "${thisDuty[0].duty_name}"  ${moment().format('LL')}  в  ${moment().format('LTS')}`
+        } else {
+          message = 'что-то пошло не так'
+        }
+        bot.sendMessage(chatId, message, { 
           reply_markup: {
           inline_keyboard: keyboardStart
           }})
       }
-
+      // закончить задачу
       if (query.data.indexOf('finDuty',0) == 0) {
         // console.log(Number(query.data.slice(7)));
         bot.sendMessage(chatId, 'эта опция еще не готова', { 
@@ -253,7 +285,7 @@ bot.on('callback_query', async (query) => {
           inline_keyboard: keyboardStart
           }})
       }
-
+      // статистика по задаче 
       if (query.data.indexOf('sttDuty',0) == 0) {
         // console.log(Number(query.data.slice(7)));
         bot.sendMessage(chatId, 'эта опция еще не готова', { 
@@ -262,16 +294,17 @@ bot.on('callback_query', async (query) => {
           }})
       }
 
-
-      if (query.data === 'sendStat') { 
-        // console.log('sendStat');
-       
+      // общая статистика 
+      if (query.data === 'sendStat') {        
         // let myStat = await get_Stat(query.message.chat.username)
         bot.sendMessage(chatId, 'эта опция еще не готова', { 
           reply_markup: {
           inline_keyboard: keyboardStart
           }})
       }
+
+
+
     }
 
     // await bot.answerCallbackQuery(query.id, {
@@ -280,8 +313,6 @@ bot.on('callback_query', async (query) => {
 
   });
   
-
-
 
   // export {bot}
   

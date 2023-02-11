@@ -98,5 +98,49 @@ const req_del_Duty = async function(dutyId) {
   }
 }
 
-export { req_get_User, req_reg_User, req_get_Duties, req_add_Duty, req_del_Duty }
+const req_getOne_Duty = async function(dutyId) {
+  try {
+    const response = await fetch(`http://${process.env.DB_HOST}:${process.env.DB_PORT}/duties/getOne/${dutyId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    })
+
+    const oneDuty = await response.json()
+    return oneDuty
+  } catch(err) {
+    console.log(err);
+  }
+}
+
+const req_add_Timing = async function(dutyId, start) {
+  console.log(dutyId);
+  console.log(start);
+  try {
+    const response = await fetch(`http://${process.env.DB_HOST}:${process.env.DB_PORT}/timings/start`, {
+      method: 'POST', 
+      credentials: 'include',
+      headers: {
+       'Content-Type': 'application/json',
+       },
+       body: JSON.stringify({ 
+         duty_id: dutyId,
+         start: start
+       })
+    })
+    const newTiming = await response.json()
+    return newTiming
+  } catch(err) {
+    console.log(err);
+  }
+
+}
+
+const req_fin_Timing = async function(dutyId, finish) {
+
+}
+
+export { req_get_User, req_reg_User, req_get_Duties, req_add_Duty, req_del_Duty, req_add_Timing, req_fin_Timing, req_getOne_Duty }
 

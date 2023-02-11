@@ -17,17 +17,11 @@ module.exports = {
         key: 'id'
       }
     },
-    start_date: {
-      type: Sequelize.DATEONLY
+    start: {
+      type: Sequelize.BIGINT
     },
-    finish_date: {
-      type: Sequelize.DATEONLY
-    },
-    start_time: {
-      type: Sequelize.TIME
-    },
-    finish_time: {
-      type: Sequelize.TIME
+    finish: {
+      type: Sequelize.BIGINT
     },
     createdAt: {
       allowNull: false,

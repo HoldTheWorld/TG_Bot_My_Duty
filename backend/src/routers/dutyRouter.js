@@ -38,7 +38,7 @@ router.get('/get/:id', async (req, res) => {
 //get one duty by id
 router.get('/getOne/:id', async (req, res) => {
   try {
-    let duty = await Duty.findAll({ 
+    let duty = await Duty.findAll({ // TODO заменить на один и убрать везде 
         raw: true,
         where: {
           id: req.params.id
@@ -53,7 +53,7 @@ router.get('/getOne/:id', async (req, res) => {
 
 //delete 
 router.delete('/delete/:id', async(req, res) => {
-  console.log('ща будем удалять #' + req.params.id);
+  console.log('будем удалять #' + req.params.id);
   console.log(req.params);
   try {
     let result = await Duty.destroy({
@@ -72,6 +72,8 @@ router.delete('/delete/:id', async(req, res) => {
     console.log(err);
   }
 })
+
+
 
 
 module.exports = router

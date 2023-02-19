@@ -135,12 +135,29 @@ const req_add_Timing = async function(dutyId, start) {
   } catch(err) {
     console.log(err);
   }
+}
 
+const req_check_Active = async function(userId) {
+  try {
+    const response = await fetch(`http://${process.env.DB_HOST}:${process.env.DB_PORT}/timings/check/${userId}`, {
+      // method: 'POST', 
+      credentials: 'include',
+      headers: {
+       'Content-Type': 'application/json',
+       },
+      //  body: JSON.stringify(dutyList)
+    })
+    const result = await response.json()
+    return result
+ 
+  } catch(err) {
+    console.log(err);
+  }
 }
 
 const req_fin_Timing = async function(dutyId, finish) {
 
 }
 
-export { req_get_User, req_reg_User, req_get_Duties, req_add_Duty, req_del_Duty, req_add_Timing, req_fin_Timing, req_getOne_Duty }
+export { req_get_User, req_reg_User, req_get_Duties, req_add_Duty, req_del_Duty, req_add_Timing, req_fin_Timing, req_getOne_Duty, req_check_Active }
 

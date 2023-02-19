@@ -5,7 +5,7 @@ dotenv.config()
 const token = process.env.BOT_TOKEN
 const bot = new TelegramBot(token, {polling: true});
 
-import { req_get_User, req_reg_User, req_get_Duties, req_add_Duty, req_del_Duty, req_add_Timing, req_fin_Timing, req_getOne_Duty } from "./reqFunctions.js"
+import { req_get_User, req_reg_User, req_get_Duties, req_add_Duty, req_del_Duty, req_add_Timing, req_fin_Timing, req_getOne_Duty, req_check_Active, req_get_One_Timing } from "./reqFunctions.js"
 // import { help_add_Duty } from "./helpFunctions.js"
 
 let keyboardStart = [
@@ -262,28 +262,116 @@ bot.on('callback_query', async (query) => {
       // начать выполнение задачи 
       if (query.data.indexOf('strDuty',0) == 0) {
         let message = ''
-        let date = Date.now();
-        let result = await req_add_Timing(Number(query.data.slice(7)), date)
-        let thisDuty = await req_getOne_Duty(Number(query.data.slice(7)))
-          console.log(thisDuty);
-          console.log(result);
-        if (result && thisDuty.length) {
-            message = `Вы начали выполнение задачи "${thisDuty[0].duty_name}"  ${moment().format('LL')}  в  ${moment().format('LTS')}`
+        let keyBoard = []
+
+        const responseCheck = await req_check_Active(checkUser[0].id)
+        if (!responseCheck.length) {
+          console.log('зашли в начало задачи');
+          // if no active, start a new one 
+          let date = Date.now();
+          let result = await req_add_Timing(Number(query.data.slice(7)), date)
+          let thisDuty = await req_getOne_Duty(Number(query.data.slice(7)))
+            // console.log(thisDuty);
+            // console.log(result);
+          if (result && thisDuty.length) {
+              message = `Вы начали выполнение задачи "${thisDuty[0].duty_name}"  ${moment().format('LL')}  в  ${moment().format('LTS')}`
+          } else {
+            message = 'что-то пошло не так'
+          }
+          keyBoard = keyboardStart
         } else {
-          message = 'что-то пошло не так'
+         let hours = Math.floor((Date.now() - responseCheck[0].dutystart)/3600000)
+         let minutes = (Math.floor((Date.now() - responseCheck[0].dutystart)/60000)) - hours*60
+          message = `
+          сначала завершите задачу "${responseCheck[0].dutyname}", начатую ${hours} час(-ов) ${minutes} минут назад
+          `
+          // тут должно быть меню незаконченной задачи 
+          // добавить в каждый пункт меню название задачи 
+          // добавить в меню "выйти в меню"
+          // добавить только тут в меню завершить незавершенную задачу 
+          
+          keyBoard = [
+            [{
+              id: 'delDuty',
+              text: 'Удалить задачу',
+              callback_data: `delDuty${Number(query.data.slice(7))}`
+              }],
+            [{
+              id: 'strDuty',
+              text: 'Начать выполнять задачу',
+              callback_data: `strDuty${Number(query.data.slice(7))}`
+              }],
+            [{
+              id: 'finDuty',
+              text: 'Закончить выполнение задачи',
+              callback_data: `finDuty${Number(query.data.slice(7))}`
+              }],
+            [{
+              id: 'sttDuty',
+              text: 'Посмотреть статистику задачи',
+              callback_data: `sttDuty${Number(query.data.slice(7))}`
+              }]
+          ]
         }
         bot.sendMessage(chatId, message, { 
           reply_markup: {
-          inline_keyboard: keyboardStart
+          inline_keyboard: keyBoard
           }})
+
+        await bot.answerCallbackQuery(query.id, {
+            show_alert: false
+          })
       }
       // закончить задачу
       if (query.data.indexOf('finDuty',0) == 0) {
+        let message = ''
+        let keyBoard = []
         // console.log(Number(query.data.slice(7)));
-        bot.sendMessage(chatId, 'эта опция еще не готова', { 
+        let date = Date.now();
+        let thisTiming = await req_get_One_Timing(Number(query.data.slice(7)))
+        if (thisTiming[0].dutyfinish) {
+          message = 'Задача уже была завершена. Вы можете начать выполнение снова.'
+          keyBoard = [
+            [{
+              id: 'delDuty',
+              text: 'Удалить задачу',
+              callback_data: `delDuty${Number(query.data.slice(7))}`
+              }],
+            [{
+              id: 'strDuty',
+              text: 'Начать выполнять задачу',
+              callback_data: `strDuty${Number(query.data.slice(7))}`
+              }],
+            [{
+              id: 'finDuty',
+              text: 'Закончить выполнение задачи',
+              callback_data: `finDuty${Number(query.data.slice(7))}`
+              }],
+            [{
+              id: 'sttDuty',
+              text: 'Посмотреть статистику задачи',
+              callback_data: `sttDuty${Number(query.data.slice(7))}`
+              }]
+          ]
+        } else {
+          let result = await req_fin_Timing(Number(query.data.slice(7)), date)
+          if (result) {
+            let thisDuty = await req_getOne_Duty(Number(query.data.slice(7)))
+            message = `
+            Вы закончили выполнение задачи "${thisDuty[0].duty_name}"  ${moment().format('LL')}  в  ${moment().format('LTS')}
+            `
+          } else {
+            message = 'что-то пошло не так'
+          }
+          keyBoard = keyboardStart
+        }
+        bot.sendMessage(chatId, message, { 
           reply_markup: {
-          inline_keyboard: keyboardStart
+          inline_keyboard: keyBoard
           }})
+        await bot.answerCallbackQuery(query.id, {
+            show_alert: false
+          })
       }
       // статистика по задаче 
       if (query.data.indexOf('sttDuty',0) == 0) {

@@ -116,8 +116,8 @@ const req_getOne_Duty = async function(dutyId) {
 }
 
 const req_add_Timing = async function(dutyId, start) {
-  console.log(dutyId);
-  console.log(start);
+  // console.log(dutyId);
+  // console.log(start);
   try {
     const response = await fetch(`http://${process.env.DB_HOST}:${process.env.DB_PORT}/timings/start`, {
       method: 'POST', 
@@ -135,12 +135,65 @@ const req_add_Timing = async function(dutyId, start) {
   } catch(err) {
     console.log(err);
   }
-
 }
 
 const req_fin_Timing = async function(dutyId, finish) {
-
+  try {
+    const response = await fetch(`http://${process.env.DB_HOST}:${process.env.DB_PORT}/timings/finish`, {
+      method: 'POST', 
+      credentials: 'include',
+      headers: {
+       'Content-Type': 'application/json',
+       },
+       body: JSON.stringify({ 
+         duty_id: dutyId,
+         finish: finish
+       })
+    })
+    await response.json()
+    return response.ok
+  } catch(err) {
+    console.log(err);
+  }
 }
 
-export { req_get_User, req_reg_User, req_get_Duties, req_add_Duty, req_del_Duty, req_add_Timing, req_fin_Timing, req_getOne_Duty }
+const req_check_Active = async function(userId) {
+  try {
+    const response = await fetch(`http://${process.env.DB_HOST}:${process.env.DB_PORT}/timings/checkact/${userId}`, {
+      // method: 'POST', 
+      credentials: 'include',
+      headers: {
+       'Content-Type': 'application/json',
+       },
+      //  body: JSON.stringify(dutyList)
+    })
+    const result = await response.json()
+    return result
+ 
+  } catch(err) {
+    console.log(err);
+  }
+}
+
+const req_get_One_Timing = async function(dutyId) {
+  try {
+    const response = await fetch(`http://${process.env.DB_HOST}:${process.env.DB_PORT}/timings/gettiming/${dutyId}`, {
+      // method: 'POST', 
+      credentials: 'include',
+      headers: {
+       'Content-Type': 'application/json',
+       },
+
+    })
+    const result = await response.json()
+    return result
+ 
+  } catch(err) {
+    console.log(err);
+  }
+}
+
+
+
+export { req_get_User, req_reg_User, req_get_Duties, req_add_Duty, req_del_Duty, req_add_Timing, req_fin_Timing, req_getOne_Duty, req_check_Active, req_get_One_Timing }
 

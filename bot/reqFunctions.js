@@ -5,15 +5,15 @@ dns.setDefaultResultOrder('ipv4first');
 const req_get_User = async function(userId) {
   // console.log(`http://${process.env.DB_HOST}:${process.env.DB_PORT}/users`);
   try {
-      console.log('START request '+userId)
+      // console.log('START request '+userId)
       const response = await fetch(`http://${process.env.DB_HOST}:${process.env.DB_PORT}/users/${userId}`, {
        credentials: 'include',
      })
      const userResult = await response.json()
-     console.log('user LIST '+userResult);
+    //  console.log('user LIST '+userResult);
     //  const target_user = userList.find((el) => el.user_tg_id === userId)
     //  console.log('TARGET USER'+target_user)
-    console.log(userResult);
+    // console.log(userResult);
      return userResult
     } catch (err) {
       console.log(err);
@@ -27,7 +27,7 @@ const req_reg_User = async function(userId) {
   //   return 11011
   // } else {
     try { 
-      console.log('try to post');
+      // console.log('try to post');
       const response = await fetch(`http://${process.env.DB_HOST}:${process.env.DB_PORT}/users/register`, {
            method: 'POST', 
            credentials: 'include',
@@ -38,7 +38,7 @@ const req_reg_User = async function(userId) {
               user_tg_id: userId
             })
          })
-         console.log(response.ok);
+        //  console.log(response.ok);
          return response.ok
       } catch(err) {
         return new Error('ошибка добавления контакта')
@@ -82,7 +82,7 @@ const req_add_Duty = async function(userId, id, dutyName) {
 
 const req_del_Duty = async function(dutyId) {
   try {
-    console.log('зашли в функцию удаления')
+    // console.log('зашли в функцию удаления')
     const response = await fetch(`http://${process.env.DB_HOST}:${process.env.DB_PORT}/duties/delete/${dutyId}`, {
       method: 'DELETE',
       headers: {
@@ -90,7 +90,7 @@ const req_del_Duty = async function(dutyId) {
       },
       credentials: 'include',
     })
-    console.log('ответ на удаление - ')
+    // console.log('ответ на удаление - ')
     return response.ok
 
   } catch(err) {
@@ -137,7 +137,7 @@ const req_add_Timing = async function(dutyId, start) {
   }
 }
 
-const req_fin_Timing = async function(dutyId, finish) {
+const req_fin_Timing = async function(timingId, finish) {
   try {
     const response = await fetch(`http://${process.env.DB_HOST}:${process.env.DB_PORT}/timings/finish`, {
       method: 'POST', 
@@ -146,7 +146,7 @@ const req_fin_Timing = async function(dutyId, finish) {
        'Content-Type': 'application/json',
        },
        body: JSON.stringify({ 
-         duty_id: dutyId,
+         id: timingId,
          finish: finish
        })
     })

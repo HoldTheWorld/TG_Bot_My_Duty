@@ -71,19 +71,22 @@ router.get('/gettiming/:id' , async(req, res) => {
   try {
     const result = await db.sequelize.query(`
     SELECT 
-    "Timings".id as TimingId,
-    "Duties".id as DutyId,
-    "Duties".user_id as Userid,
-    "Duties".duty_name as DutyName,
-    "Timings".start as DutyStart,
-    "Timings".finish as DutyFinish
-     from "Timings"
-      JOIN "Duties" ON 
-        "Duties".id = "Timings".duty_id
-            WHERE "Timings".duty_id = ${req.params.id}
+      "Timings".id as TimingId,
+      "Duties".id as DutyId,
+      "Duties".user_id as Userid,
+      "Duties".duty_name as DutyName,
+      "Timings".start as DutyStart,
+      "Timings".finish as DutyFinish
+      from "Timings"
+        JOIN "Duties" ON 
+          "Duties".id = "Timings".duty_id
+        JOIN "Users" ON
+          "Users".id = "Duties".user_id
+              WHERE "Users".id = ${req.params.id};
     `, {
       raw: false })
       res.json(result[0])
+
   } catch(err) {
     console.log(err);
   }

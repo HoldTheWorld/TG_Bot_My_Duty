@@ -7,7 +7,7 @@ const bot = new TelegramBot(token, {polling: true});
 
 import { req_get_User, req_reg_User, req_get_Duties, req_add_Duty, req_del_Duty, req_add_Timing, req_fin_Timing, req_getOne_Duty, req_check_Active, req_get_One_Timing } from "./reqFunctions.js"
 
-import { getDutyMenu } from './helpFunctions.js'
+import { getDutyMenu, getOneStat, getStatMenu, getTimeString } from './helpFunctions.js'
 
 let keyboardStart = [
   [
@@ -26,10 +26,9 @@ let keyboardStart = [
   ],
   [
     {
-      id: 'sendStat',
+      id: 'sttDuty',
       text: 'Посмотреть мою статистику',
-      callback_data: 'sendStat',
-      url: '' //внешняя ссылка
+      callback_data: 'sttDuty'
     }
   ]
 ];
@@ -47,6 +46,7 @@ let keyboardYesNoAddDuty = [
     }
   ]
 ]
+
 bot.setMyCommands([
   {command: '/start' , description: 'старт'},
   {command: '/register' , description: 'регистрация'},
@@ -59,7 +59,7 @@ bot.setMyCommands([
   // {command: '/showstat' , description: 'показать статистику'},
   // {command: '/deleteme' , description: 'удалить свой профиль,задачи,статистику'}
 ])
-moment.locale('ru')
+// moment.locale('ru')
    bot.on('text', async (msg) => {
     // console.log('зашли в text');
     // console.log(msg.chat.username + '  ' + msg.text );
@@ -68,27 +68,6 @@ moment.locale('ru')
     let userTdId = msg.chat.username
     let checkUser
     let message
-    // console.log(msg.date.toString);
-    // let newDate = Date.now()
-    // console.log(newDate);
-    // console.log(Date.UTC());
-    // console.log(msg.date);
-    // const date = new Date();
-//     const date = msg.date;
-// // console.log(moment().format());
-// // console.log(moment().format('MMMM Do YYYY, h:mm:ss a'));
-// console.log(date.toLocaleString('ru-RU', {
-//   year: 'numeric',
-//   month: 'numeric',
-//   day: 'numeric',
-//   hour: '2-digit',
-//   minute: '2-digit',
-//   second: '2-digit'
-
-// }));
-// console.log(moment().format('l') + ' ' + moment().format('LT'));
-// console.log(`${date.getDate()}.${String(date.getMonth() + 1).padStart(2, "0")}.${date.getFullYear()}`);
-
     try {
       checkUser = await req_get_User(userTdId)
       // console.log('нашли пользователя: ' + checkUser[0].user_tg_id );
@@ -132,12 +111,16 @@ moment.locale('ru')
 
     }  else if (text.toLowerCase().indexOf('я буду') == 0) {
       // console.log('ща добавим задачу ' + msg.text.slice(7));
-      let newDuty = await req_add_Duty(userTdId, checkUser[0].id, msg.text.slice(7))
-      if (newDuty) {
-        message = `Вы добавили задачу "${newDuty.duty_name}"`
-      } else {
-        message = 'не удалось добавить задачу, попробуйте снова'
-      }
+     if (!msg.text.slice(7).trim().length) {
+      message = 'Вы ввели пустое название. Зачем?('
+     } else {
+        let newDuty = await req_add_Duty(userTdId, checkUser[0].id, msg.text.slice(7))
+        if (newDuty) {
+          message = `Вы добавили задачу "${newDuty.duty_name}"`
+        } else {
+          message = 'не удалось добавить задачу, попробуйте снова'
+        }
+     }
       bot.sendMessage(chatId, message, { 
         reply_markup: {
         inline_keyboard: keyboardStart
@@ -152,7 +135,6 @@ moment.locale('ru')
     }
   });
 
-
 bot.on('callback_query', async (query) => {
   const chatId = query.message.chat.id;
   let userTdId = query.message.chat.username
@@ -162,6 +144,8 @@ bot.on('callback_query', async (query) => {
   let checkUser
   try {
     checkUser = await req_get_User(userTdId)
+    console.log(query.message.date);
+    console.log(Date.now());
     } catch (err) {
       console.log(err);
     }
@@ -285,8 +269,9 @@ bot.on('callback_query', async (query) => {
           }
           keyBoard = await getDutyMenu(query.data.slice(7))
         } else {
-         let hours = Math.floor((Date.now() - responseCheck[0].dutystart)/3600000)
-         let minutes = (Math.floor((Date.now() - responseCheck[0].dutystart)/60000)) - hours*60
+          let {hours, minutes} =  getTimeString((Date.now() - responseCheck[0].dutystart))
+        //  let hours = Math.floor((Date.now() - responseCheck[0].dutystart)/3600000)
+        //  let minutes = (Math.floor((Date.now() - responseCheck[0].dutystart)/60000)) - hours*60
           message = `
           сначала завершите задачу "${responseCheck[0].dutyname}", начатую ${hours} час(-ов) ${minutes} минут назад
           `
@@ -337,30 +322,23 @@ bot.on('callback_query', async (query) => {
       }
       // статистика по задаче 
       if (query.data.indexOf('sttDuty',0) == 0) {
-        // console.log(Number(query.data.slice(7)));
-        bot.sendMessage(chatId, 'эта опция еще не готова', { 
+        let keyBoardStat = getStatMenu(query.data.slice(7))
+        bot.sendMessage(chatId, 'За какой период?', { 
           reply_markup: {
-          inline_keyboard: keyboardStart
+          inline_keyboard: keyBoardStat
           }})
+        await bot.answerCallbackQuery(query.id, {
+          show_alert: false
+          })
       }
-
-      // общая статистика 
-      if (query.data === 'sendStat') {        
-        // let myStat = await get_Stat(query.message.chat.username)
-        bot.sendMessage(chatId, 'эта опция еще не готова', { 
-          reply_markup: {
-          inline_keyboard: keyboardStart
-          }})
+      if (query.data.indexOf('stat', 0) == 0) {
+        let message = await getOneStat(checkUser[0].id, query.data.slice(4,5))
+        bot.sendMessage(chatId, message )
+        await bot.answerCallbackQuery(query.id, {
+          show_alert: false
+        })
       }
-
-
-
     }
-
-    // await bot.answerCallbackQuery(query.id, {
-    //   show_alert: false
-    //   })
-
   });
   
 
@@ -428,3 +406,25 @@ bot.on('callback_query', async (query) => {
   //       }});
   //   }  
   // });
+
+
+      // console.log(msg.date.toString);
+    // let newDate = Date.now()
+    // console.log(newDate);
+    // console.log(Date.UTC());
+    // console.log(msg.date);
+    // const date = new Date();
+//     const date = msg.date;
+// // console.log(moment().format());
+// // console.log(moment().format('MMMM Do YYYY, h:mm:ss a'));
+// console.log(date.toLocaleString('ru-RU', {
+//   year: 'numeric',
+//   month: 'numeric',
+//   day: 'numeric',
+//   hour: '2-digit',
+//   minute: '2-digit',
+//   second: '2-digit'
+
+// }));
+// console.log(moment().format('l') + ' ' + moment().format('LT'));
+// console.log(`${date.getDate()}.${String(date.getMonth() + 1).padStart(2, "0")}.${date.getFullYear()}`);

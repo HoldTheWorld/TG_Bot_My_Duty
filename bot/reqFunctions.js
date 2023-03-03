@@ -175,9 +175,10 @@ const req_check_Active = async function(userId) {
   }
 }
 
-const req_get_One_Timing = async function(dutyId) {
+const req_get_One_Timing = async function(userId) {
+  console.log(userId);
   try {
-    const response = await fetch(`http://${process.env.DB_HOST}:${process.env.DB_PORT}/timings/gettiming/${dutyId}`, {
+    const response = await fetch(`http://${process.env.DB_HOST}:${process.env.DB_PORT}/timings/gettiming/${userId}`, {
       // method: 'POST', 
       credentials: 'include',
       headers: {

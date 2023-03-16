@@ -13,6 +13,11 @@ module.exports = {
       unique: true,
       allowNull: false
     },
+    time_zone: {
+      type: Sequelize.INTEGER,
+      defaultValue: 10800,
+      allowNull: false
+    },
     createdAt: {
       allowNull: false,
       type: Sequelize.DATE

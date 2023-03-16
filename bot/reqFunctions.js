@@ -20,6 +20,28 @@ const req_get_User = async function(userId) {
     }
 }
 
+const upd_timeZone = async function(userId, timeZone) {
+
+  try {
+    const response = await fetch(`http://${process.env.DB_HOST}:${process.env.DB_PORT}/users/settimezone`, {
+      method: 'POST', 
+      credentials: 'include',
+      headers: {
+       'Content-Type': 'application/json',
+       },
+       body: JSON.stringify({ 
+         user_tg_id: userId, 
+         time_zone: timeZone
+       })
+    })
+    const updCount = await response.json()
+    return updCount[0]
+  } catch(err) {
+    console.log(err);
+  }
+
+}
+
 const req_reg_User = async function(userId) {
   // let user_search = await req_get_User(userId)
 
@@ -196,5 +218,5 @@ const req_get_One_Timing = async function(userId) {
 
 
 
-export { req_get_User, req_reg_User, req_get_Duties, req_add_Duty, req_del_Duty, req_add_Timing, req_fin_Timing, req_getOne_Duty, req_check_Active, req_get_One_Timing }
+export { req_get_User, req_reg_User, req_get_Duties, req_add_Duty, req_del_Duty, req_add_Timing, req_fin_Timing, req_getOne_Duty, req_check_Active, req_get_One_Timing, upd_timeZone }
 

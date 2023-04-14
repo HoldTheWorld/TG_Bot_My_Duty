@@ -89,6 +89,7 @@ const req_get_Duties = async function(userId, id) {
       console.log(err);
       result.isOk = false
     }
+    console.log(result);
     return result
 }
 
@@ -133,6 +134,7 @@ const req_del_Duty = async function(dutyId) {
     console.log(err);
     result = false
   }
+  // console.log('delete result ==> '+ result);
   return result
 }
 

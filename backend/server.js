@@ -4,7 +4,7 @@ const cors = require('cors');
 const userRouter = require('./src/routers/userRouter');
 const dutyRouter = require('./src/routers/dutyRouter');
 const timingRouter = require('./src/routers/timingRouter')
-const PORT = process.env.PORT ?? 3001;
+const PORT = process.env.PORT ?? 4321;
 
 const app = express()
 
@@ -15,11 +15,12 @@ app.use(cors({
   credentials: true,
 }));
 
-// app.get('/', (req, res) => {
-//   res.send('hello ! ')
-// })
+app.get('/', (req, res) => {
+  res.send('hello ! ')
+})
 
 http://numbersapi.com/#42
+
 app.use('/users', userRouter);
 app.use('/duties', dutyRouter);
 app.use('/timings', timingRouter)

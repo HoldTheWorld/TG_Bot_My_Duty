@@ -3,13 +3,13 @@ const { User } = require('../db/models');
 
 
 router.post('/register', async (req, res) => {
-  // const { user_tg_id } = req.body
   try {
     const newUser = await User.create({...req.body})
-    // console.log(newUser);
-    res.status(200).json(newUser)
+   // returns false if the user was already created before
+    res.status(200).json(newUser._options.isNewRecord)
   } catch(err) {
     console.log(err);
+    res.status(500)
   }
 });
 
@@ -20,12 +20,13 @@ router.post('/settimezone', async (req, res) => {
         user_tg_id: req.body.user_tg_id
       }
     })
+    console.log(updUser);
     res.status(200).json(updUser)
   } catch(err) {
     console.log(err);
+    res.status(500)
   }
 })
-
 router.get('/:tgId', async (req, res) => {
   console.log('get request');
   try {
@@ -36,10 +37,11 @@ router.get('/:tgId', async (req, res) => {
       }
     })
     console.log('RESULT get request');
-    res.json(user)
+    res.status(200).json(user)
     console.log(user);
   } catch(err) {
     console.log(err);
+    res.status(500)
   }
 });
 

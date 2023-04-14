@@ -1,6 +1,17 @@
 DB_USER=
 DB_PASS=
-DB_NAME=
-DB_HOST=
-BASE_URL=
-PORT=
+DB_NAME=duties
+DB_HOST=localhost
+DB_PORT=4321
+NODE_ENV='development'
+DB_DIALECT='postgres'
+
+
+# for docker 
+# DB_USER=
+# DB_PASS=
+# DB_NAME=duties
+# DB_HOST=db
+# NODE_ENV='development'
+# DB_DIALECT='postgres'
+ 

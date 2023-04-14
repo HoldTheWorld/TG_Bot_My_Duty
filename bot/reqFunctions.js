@@ -1,27 +1,32 @@
 import fetch from "node-fetch";
+import { log } from 'node:console';
 import dns from 'node:dns';
 dns.setDefaultResultOrder('ipv4first');
 
 const req_get_User = async function(userId) {
-  // console.log(`http://${process.env.DB_HOST}:${process.env.DB_PORT}/users`);
+  let result = {
+    isOk: true, 
+    user: []
+  }
   try {
-      // console.log('START request '+userId)
       const response = await fetch(`http://${process.env.DB_HOST}:${process.env.DB_PORT}/users/${userId}`, {
        credentials: 'include',
      })
-     const userResult = await response.json()
-    //  console.log('user LIST '+userResult);
-    //  const target_user = userList.find((el) => el.user_tg_id === userId)
-    //  console.log('TARGET USER'+target_user)
-    // console.log(userResult);
-     return userResult
+    const userResult = await response.json()
+    result.isOk = true
+    result.user = userResult
     } catch (err) {
       console.log(err);
+      result.isOk = false
     }
+    return result
 }
 
 const upd_timeZone = async function(userId, timeZone) {
-
+  let result = {
+    isOk: true,
+    updated: []
+  }
   try {
     const response = await fetch(`http://${process.env.DB_HOST}:${process.env.DB_PORT}/users/settimezone`, {
       method: 'POST', 
@@ -34,22 +39,21 @@ const upd_timeZone = async function(userId, timeZone) {
          time_zone: timeZone
        })
     })
-    const updCount = await response.json()
-    return updCount[0]
+    result.isOk = true
+    result.updated = await response.json()
   } catch(err) {
     console.log(err);
+    result.isOk = false
   }
-
+  return result
 }
 
 const req_reg_User = async function(userId) {
-  // let user_search = await req_get_User(userId)
-
-  // if (user_search.length) {
-  //   return 11011
-  // } else {
+  let result = {
+    isOk: true, 
+    isNew: true
+  }
     try { 
-      // console.log('try to post');
       const response = await fetch(`http://${process.env.DB_HOST}:${process.env.DB_PORT}/users/register`, {
            method: 'POST', 
            credentials: 'include',
@@ -60,29 +64,39 @@ const req_reg_User = async function(userId) {
               user_tg_id: userId
             })
          })
-        //  console.log(response.ok);
-         return response.ok
+         result.isOk = await response.json()
+         result.isNew = response.ok
       } catch(err) {
-        return new Error('ошибка добавления контакта')
+        console.log(new Error('Error in register fetch'));
+        result.isOk = false
       }
-  // }
+    return result
 }
 
 const req_get_Duties = async function(userId, id) {
+  let result = {
+    isOk: true,
+    duties: []
+  }
     try {
       const response = await fetch(`http://${process.env.DB_HOST}:${process.env.DB_PORT}/duties/get/${id}`, {
         method: 'GET', 
         credentials: 'include',
      })
-     const dutyList = await response.json()
-     return dutyList
+     result.duties = await response.json()
+     result.isOk = true
     } catch (err) {
       console.log(err);
+      result.isOk = false
     }
-    return null
+    return result
 }
 
 const req_add_Duty = async function(userId, id, dutyName) {
+  let result = {
+    isOk: true,
+    duty: []
+  }
   try {
     const response = await fetch(`http://${process.env.DB_HOST}:${process.env.DB_PORT}/duties`, {
       method: 'POST', 
@@ -95,16 +109,18 @@ const req_add_Duty = async function(userId, id, dutyName) {
          duty_name: dutyName
        })
     })
-    const newDuty = await response.json()
-    return newDuty
+    result.isOk = true
+    result.duty = await response.json()
   } catch(err) {
     console.log(err);
+    result.isOk = false
   }
+  return result
 }
 
 const req_del_Duty = async function(dutyId) {
+  let result = true
   try {
-    // console.log('зашли в функцию удаления')
     const response = await fetch(`http://${process.env.DB_HOST}:${process.env.DB_PORT}/duties/delete/${dutyId}`, {
       method: 'DELETE',
       headers: {
@@ -112,15 +128,19 @@ const req_del_Duty = async function(dutyId) {
       },
       credentials: 'include',
     })
-    // console.log('ответ на удаление - ')
-    return response.ok
-
+    result = response.ok
   } catch(err) {
     console.log(err);
+    result = false
   }
+  return result
 }
 
 const req_getOne_Duty = async function(dutyId) {
+  let result = {
+    isOk: true,
+    duty: []
+  }
   try {
     const response = await fetch(`http://${process.env.DB_HOST}:${process.env.DB_PORT}/duties/getOne/${dutyId}`, {
       method: 'GET',
@@ -130,16 +150,20 @@ const req_getOne_Duty = async function(dutyId) {
       credentials: 'include',
     })
 
-    const oneDuty = await response.json()
-    return oneDuty
+    result.duty = await response.json()
+    result.isOk = true
   } catch(err) {
     console.log(err);
+    result.isOk = false
   }
+  return result
 }
 
 const req_add_Timing = async function(dutyId, start) {
-  // console.log(dutyId);
-  // console.log(start);
+  let result = {
+    isOk: true,
+    timing: []
+  }
   try {
     const response = await fetch(`http://${process.env.DB_HOST}:${process.env.DB_PORT}/timings/start`, {
       method: 'POST', 
@@ -152,14 +176,20 @@ const req_add_Timing = async function(dutyId, start) {
          start: start
        })
     })
-    const newTiming = await response.json()
-    return newTiming
+    result.isOk = true
+    result.timing = await response.json()
   } catch(err) {
     console.log(err);
+    result.isOk = false
   }
+  return result
 }
 
 const req_fin_Timing = async function(timingId, finish) {
+  let result = {
+    isOk: true,
+    finished: []
+  }
   try {
     const response = await fetch(`http://${process.env.DB_HOST}:${process.env.DB_PORT}/timings/finish`, {
       method: 'POST', 
@@ -172,14 +202,20 @@ const req_fin_Timing = async function(timingId, finish) {
          finish: finish
        })
     })
-    await response.json()
-    return response.ok
+    result.isOk = true
+    result.finished = await response.json()
   } catch(err) {
     console.log(err);
+    result.isOk = false
   }
+  return result
 }
 
 const req_check_Active = async function(userId) {
+  let result = {
+    isOk: true,
+    active: []
+  }
   try {
     const response = await fetch(`http://${process.env.DB_HOST}:${process.env.DB_PORT}/timings/checkact/${userId}`, {
       // method: 'POST', 
@@ -187,18 +223,21 @@ const req_check_Active = async function(userId) {
       headers: {
        'Content-Type': 'application/json',
        },
-      //  body: JSON.stringify(dutyList)
     })
-    const result = await response.json()
-    return result
- 
+    result.active = await response.json()
+    result.isOk = true
   } catch(err) {
     console.log(err);
+    result.isOk = false
   }
+  return result
 }
 
 const req_get_One_Timing = async function(userId) {
-  console.log(userId);
+  let result = {
+    isOk: true,
+    timing: []
+  }
   try {
     const response = await fetch(`http://${process.env.DB_HOST}:${process.env.DB_PORT}/timings/gettiming/${userId}`, {
       // method: 'POST', 
@@ -206,14 +245,14 @@ const req_get_One_Timing = async function(userId) {
       headers: {
        'Content-Type': 'application/json',
        },
-
     })
-    const result = await response.json()
-    return result
- 
+    result.timing = await response.json()
+    result.isOk = true
   } catch(err) {
     console.log(err);
+    result.isOk = false
   }
+  return result
 }
 
 

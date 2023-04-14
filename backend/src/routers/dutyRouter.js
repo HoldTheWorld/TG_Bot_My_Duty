@@ -2,25 +2,18 @@ const router = require('express').Router();
 const { Duty } = require('../db/models');
 
 router.post('/', async (req, res) => {
-  console.log('hello from DUTY');
-  console.log('получили POST запрос');
-  console.log(req.body);
-
-  // const { user_tg_id } = req.body
   try {
     const newDuty = await Duty.create({...req.body})
     console.log(newDuty);
     res.status(200).json(newDuty)
   } catch(err) {
-    console.log(err);
+    console.log(err)
+    res.status(500)
   }
 });
 
 //get duties by user id
 router.get('/get/:id', async (req, res) => {
-  console.log('hello from DUTY');
-  console.log('получили GET запрос');
-
   try {
     let duties = await Duty.findAll({ 
         raw: true,
@@ -28,10 +21,10 @@ router.get('/get/:id', async (req, res) => {
           user_id: req.params.id
         }
       })
-    console.log(duties);
-    res.json(duties)
+    res.status(200).json(duties)
   } catch(err) {
-    console.log(err);
+    console.log(err)
+    res.status(500)
   }
 });
 
@@ -44,10 +37,11 @@ router.get('/getOne/:id', async (req, res) => {
           id: req.params.id
         }
       })
-    console.log(duty);
-    res.json(duty)
+    console.log(duty)
+    res.status(200).json(duty)
   } catch(err) {
-    console.log(err);
+    console.log(err)
+    res.status(500)
   }
 });
 
@@ -61,19 +55,16 @@ router.delete('/delete/:id', async(req, res) => {
         id: req.params.id
       }
     })
-
     if (result > 0) {
-      res.sendStatus(200)
+      res.status(200)
     } else {
-      res.sendStatus(400)
+      res.status(400)
     }
 
   } catch(err) {
-    console.log(err);
+    console.log(err)
+    res.status(500)
   }
 })
-
-
-
 
 module.exports = router

@@ -4,20 +4,17 @@ const db = require('../db/models/index')
 
 
 router.post('/start', async (req, res) => {
-  console.log('hello from TIMINGS');
-  console.log('получили POST запрос TIMINGS');
-
   try {
     const newTiming = await Timing.create({...req.body})
     console.log(newTiming);
     res.status(200).json(newTiming)
   } catch(err) {
     console.log(err);
+    res.status(500)
   }
 });
 
 router.post('/finish', async (req, res) => {
-// console.log(req.body.duty_id);
   try {
     const updTiming = await Timing.update({
       finish: req.body.finish
@@ -35,13 +32,12 @@ router.post('/finish', async (req, res) => {
     }
   } catch(err) {
     console.log(err);
+    res.status(500)
   }
 });
 
 //check for not finished tasks by user id 
 router.get('/checkact/:id' , async(req, res) => {
-  console.log('проверяем незавершенные задачи ' );
-  console.log(req.params.id);
   try {
     const result = await db.sequelize.query(`
     SELECT 
@@ -60,14 +56,14 @@ router.get('/checkact/:id' , async(req, res) => {
             AND "Timings".finish IS NULL;
     `, {
       raw: false })
-      res.json(result[0])
+      res.status(200).json(result[0])
   } catch(err) {
     console.log(err);
+    res.status(500)
   }
 })
 //search for duty and timing data by duty id 
 router.get('/gettiming/:id' , async(req, res) => {
-  console.log('ищем тайминг по айди задачи' );
   try {
     const result = await db.sequelize.query(`
     SELECT 
@@ -85,10 +81,10 @@ router.get('/gettiming/:id' , async(req, res) => {
               WHERE "Users".id = ${req.params.id};
     `, {
       raw: false })
-      res.json(result[0])
-
+      res.status(200).json(result[0])
   } catch(err) {
     console.log(err);
+    res.status(500)
   }
 })
 

@@ -29,59 +29,25 @@ let keyboardStart = [
     }
   ],
 ];
-let keyboardYesNoAddDuty = [
-  [
-    {
-      text: 'Да',
-      callback_data: 'yesAddDuty'
-    }
-  ],
-  [
-    {
-      text: 'Нет',
-      callback_data: 'noAddDuty'
-    }
-  ]
-]
+
 bot.setMyCommands([
   {command: '/start' , description: 'старт'},
-  {command: '/register' , description: 'регистрация'},
   {command: '/menu' , description: 'меню'},
 ])
 
-  bot.on('text', async (msg) => {
-    let text = msg.text
-    let chatId = msg.chat.id
-    let userTdId = msg.chat.username
-    let checkUser
-    let message = ''
-    let keyBoard = [[]]
-    try {
-      checkUser = await req_get_User(userTdId)
-    } catch (err) {
-        console.log(err);
-    }
+bot.on('text', async (msg) => {
+  let text = msg.text
+  let chatId = msg.chat.id
+  let userTdId = msg.chat.username
+  let checkUser
+  let message = ''
+  let keyBoard = [[]]
 
-    if (text == '/start' || text == '/menu') {
-      // bot.sendMessage(chatId, 'Привет!');
-      // let checkUser = await req_get_User(userTdId)
-      if (!checkUser.length) {
-        message = 'Чтобы воспользоваться ботом, введите /register'
-        // return bot.sendMessage(chatId, 'Чтобы воспользоваться ботом, введите /register');
-      } else if (checkUser.length && checkUser[0].user_tg_id == userTdId) {
-        message = `Чего желаете, ${userTdId}?`
-        keyBoard = keyboardStart
-        // return bot.sendMessage(chatId, `Чего желаете, ${userTdId}?`, { 
-        //   reply_markup: {
-        //   inline_keyboard: keyboardStart
-        // }});
-      }
-      
-    } else if (text == '/register') {
-      if (!checkUser.length) {
-        let regResult = await req_reg_User(userTdId)
-        if (regResult) {
-          message = `Вы успешно зарегистрированы\n`;
+  checkUser = await req_get_User(userTdId)
+  if (checkUser.isOk) {
+    if (!checkUser.user.length) {
+      let regResult = await req_reg_User(userTdId)
+        if (regResult.isOk /*&& regResult.isNew*/) {
           message += `
           🚀 Введи /start или /menu, чтобы начать работу. 
           🚀 Для быстрого добавления задачи введи: Я буду {название задачи}.
@@ -90,57 +56,138 @@ bot.setMyCommands([
           Чтобы установить/сменить геопозицию:
           нажми на скрепку 📎 - местоположение  🚩- и выбери точку на карте 📍.
           Если не выбрать геопозицию, по умолчанию будет выбрана временна зона в Москве (+3 часа UTC).`
-          // keyBoard = keyboardStart
+          keyBoard = keyboardStart
         } else {
-          message = 'Ошибка регистрации';
+          message = 'Ошибка сервера. Попробуйте позднее'
           // keyboardStart = []
         }
-      } else if (checkUser.length && checkUser[0].user_tg_id == userTdId) {
-        message = 'вы уже зарегистрированы'; 
-        keyBoard = keyboardStart
-      } else {
-        message = 'что происходит?';
-        // keyboardStart = []
-      }
-  
-      // return bot.sendMessage(chatId, message, { 
-      //   reply_markup: {
-      //   inline_keyboard: keyboardStart
-      //   }});
-    }  else if (text.toLowerCase().indexOf('я буду') == 0 && checkUser.length) {
-      
-      if (!msg.text.slice(7).trim().length) {
-      message = 'Вы ввели пустое название. Попробуйте ввести НЕ пустое.'
-      } else {
-        let newDuty = await req_add_Duty(userTdId, checkUser[0].id, msg.text.slice(7))
-        if (newDuty) {
-          message = `Вы добавили задачу "${newDuty.duty_name}"`
-          keyBoard = keyboardStart
-        } else {
-          message = 'не удалось добавить задачу, попробуйте снова'
-          keyBoard = keyboardStart
-        }
-      }
-      // bot.sendMessage(chatId, message, { 
-      //   reply_markup: {
-      //   inline_keyboard: keyboardStart
-      //   }})
-    } else if (msg.text.toLowerCase().indexOf('я буду') > 0 && checkUser.length ) {
-      message = 'Начни со слов "Я буду" '
-      // bot.sendMessage(chatId, 'Начни со слов "Я буду" ')
     } else {
-      message =  'что вы хотите сделать?'
-      keyBoard = keyboardStart
-      // bot.sendMessage(chatId, 'что вы хотите сделать?', { 
-      //   reply_markup: {
-      //   inline_keyboard: keyboardStart
-      //   }})
-    } 
-    bot.sendMessage(chatId, message, { 
-      reply_markup: {
-      inline_keyboard: keyBoard
-      }});
-  });
+      if (text == '/start' || text == '/menu') {
+        message = `Чего желаете, ${userTdId}?`
+        keyBoard = keyboardStart
+      } else if (text.toLowerCase().indexOf('я буду') == 0 && checkUser.user.length) {
+          if (!msg.text.slice(7).trim().length) {
+          message = 'Вы ввели пустое название. Попробуйте ввести НЕ пустое.'
+          } else {
+            let newDuty = await req_add_Duty(userTdId, checkUser.user[0].id, msg.text.slice(7))
+            if (newDuty.isOk) {
+              message = `Вы добавили задачу "${newDuty.duty.duty_name}"`
+              keyBoard = keyboardStart
+            } else {
+              message = 'не удалось добавить задачу, попробуйте снова'
+              keyBoard = keyboardStart
+            }
+          }
+      } else if (msg.text.toLowerCase().indexOf('я буду') > 0 && checkUser.user.length ) {
+          message = 'Начни со слов "Я буду" '
+      } else {
+        message =  'что вы хотите сделать?'
+        keyBoard = keyboardStart
+      } // end text treatment
+    } // end check + text treatment
+  } else {
+    message = 'Ошибка сервера. Попробуйте позднее'
+  } // end server check
+
+  bot.sendMessage(chatId, message, { 
+    reply_markup: {
+    inline_keyboard: keyBoard
+    }});
+}) // end ON 
+
+  // bot.on('text', async (msg) => {
+  //   let text = msg.text
+  //   let chatId = msg.chat.id
+  //   let userTdId = msg.chat.username
+  //   let checkUser
+  //   let message = ''
+  //   let keyBoard = [[]]
+  //   try {
+  //     checkUser = await req_get_User(userTdId)
+  //   } catch (err) {
+  //       console.log(" ERROR==>" + err);
+  //   }
+
+    // if (text == '/start' || text == '/menu') {
+    //   console.log(userTdId);
+    //   // bot.sendMessage(chatId, 'Привет!');
+    //   let checkUser = await req_get_User(userTdId)
+    //   if (!checkUser.length) {
+    //     message = 'Чтобы воспользоваться ботом, введите /register'
+    //     // return bot.sendMessage(chatId, 'Чтобы воспользоваться ботом, введите /register');
+    //   } else if (checkUser.length && checkUser[0].user_tg_id == userTdId) {
+    //     message = `Чего желаете, ${userTdId}?`
+    //     keyBoard = keyboardStart
+    //     // return bot.sendMessage(chatId, `Чего желаете, ${userTdId}?`, { 
+    //     //   reply_markup: {
+    //     //   inline_keyboard: keyboardStart
+    //     // }});
+    //   }
+      
+    // } else if (text == '/register') {
+    //   if (!checkUser.length) {
+    //     let regResult = await req_reg_User(userTdId)
+    //     if (regResult) {
+    //       message = `Вы успешно зарегистрированы\n`;
+    //       message += `
+    //       🚀 Введи /start или /menu, чтобы начать работу. 
+    //       🚀 Для быстрого добавления задачи введи: Я буду {название задачи}.
+    //       ⚠️ Для корректного учета времени тебе необходимо поделиться с ботом геопозицией: боту нужна только твоя временная зона, поэтому ты просто можешь выбрать ближайших город, находящийся в том же часовом поясе, что и ты. 
+    //       Ты можешь сменить геопозицию в любое время, но все ранее учтенные задачи будут оставаться в том часовом поясе, в котором они были созданы. 
+    //       Чтобы установить/сменить геопозицию:
+    //       нажми на скрепку 📎 - местоположение  🚩- и выбери точку на карте 📍.
+    //       Если не выбрать геопозицию, по умолчанию будет выбрана временна зона в Москве (+3 часа UTC).`
+    //       // keyBoard = keyboardStart
+    //     } else {
+    //       message = 'Ошибка регистрации';
+    //       // keyboardStart = []
+    //     }
+    //   } else if (checkUser.length && checkUser[0].user_tg_id == userTdId) {
+    //     message = 'вы уже зарегистрированы'; 
+    //     keyBoard = keyboardStart
+    //   } else {
+    //     message = 'что происходит?';
+    //     // keyboardStart = []
+    //   }
+  
+    //   // return bot.sendMessage(chatId, message, { 
+    //   //   reply_markup: {
+    //   //   inline_keyboard: keyboardStart
+    //   //   }});
+    // }  else if (text.toLowerCase().indexOf('я буду') == 0 && checkUser.length) {
+      
+    //   if (!msg.text.slice(7).trim().length) {
+    //   message = 'Вы ввели пустое название. Попробуйте ввести НЕ пустое.'
+    //   } else {
+    //     let newDuty = await req_add_Duty(userTdId, checkUser[0].id, msg.text.slice(7))
+    //     if (newDuty) {
+    //       message = `Вы добавили задачу "${newDuty.duty_name}"`
+    //       keyBoard = keyboardStart
+    //     } else {
+    //       message = 'не удалось добавить задачу, попробуйте снова'
+    //       keyBoard = keyboardStart
+    //     }
+    //   }
+    //   // bot.sendMessage(chatId, message, { 
+    //   //   reply_markup: {
+    //   //   inline_keyboard: keyboardStart
+    //   //   }})
+    // } else if (msg.text.toLowerCase().indexOf('я буду') > 0 && checkUser.length ) {
+    //   message = 'Начни со слов "Я буду" '
+    //   // bot.sendMessage(chatId, 'Начни со слов "Я буду" ')
+    // } else {
+    //   message =  'что вы хотите сделать?'
+    //   keyBoard = keyboardStart
+    //   // bot.sendMessage(chatId, 'что вы хотите сделать?', { 
+    //   //   reply_markup: {
+    //   //   inline_keyboard: keyboardStart
+    //   //   }})
+    // } 
+  //   bot.sendMessage(chatId, message, { 
+  //     reply_markup: {
+  //     inline_keyboard: keyBoard
+  //     }});
+  // });
 
 bot.on('location', async (query) => {
   const userTdId = query.chat.username
@@ -149,16 +196,16 @@ bot.on('location', async (query) => {
   let keyBoard = [[]]
   let checkUser
   checkUser = await req_get_User(userTdId)
-  if (checkUser.length && checkUser[0].user_tg_id == userTdId)  {
+  if (checkUser.user.length && checkUser.user[0].user_tg_id == userTdId)  {
     let {timeZone, temp} = await getTimeZone(query.location.latitude, query.location.longitude)
     let updResult = await upd_timeZone(query.chat.username, timeZone)
-    if (updResult == 1 ) {
+    if (updResult.isOk && updResult.updated == 1 ) {
       message = `Установлена временная зона: "UTC/GMT ${timeZone/3600} hours"`
     } else {
-      message = 'что-то пошло не так'
+      message = 'что-то пошло не так. Попробуйте позднее'
     }
   } else {
-    message = 'Чтобы воспользоваться ботом, введите /register'
+    message = 'Чтобы воспользоваться ботом, введите /start'
   }
   bot.sendMessage(chatId, message, {
     reply_markup: {
@@ -174,21 +221,17 @@ bot.on('callback_query', async (query) => {
   let timeZoneMs
   let keyboardDuties = [[]]
   let checkUser
-  try {
-    checkUser = await req_get_User(userTdId)
-  } catch (err) {
-    console.log(err);
-  }
-  
-  if (checkUser.length && checkUser[0].user_tg_id == userTdId) {
-      timeZoneMs = checkUser[0].time_zone * 1000
+
+  checkUser = await req_get_User(userTdId)
+
+  if (checkUser.isOk && checkUser.user[0].user_tg_id == userTdId) {
+      timeZoneMs = checkUser.user[0].time_zone * 1000
       // список задач 
       if (query.data === 'dutyList') { 
-        let dutyList = await req_get_Duties(userTdId, checkUser[0].id)
-        // console.log(dutyList);
-        if (dutyList && dutyList.length) {
+        let dutyList = await req_get_Duties(userTdId, checkUser.user[0].id)
+        if (dutyList.isOk && dutyList.duties.length) {
           message = 'Выберите задачу'
-          dutyList.forEach(el => {
+          dutyList.duties.forEach(el => {
             keyboardDuties.push([{
               id: `${el.id}+${el.duty_name}`,
               text: el.duty_name,
@@ -211,7 +254,8 @@ bot.on('callback_query', async (query) => {
           }
         })
         await bot.answerCallbackQuery(query.id, {
-          show_alert: false
+          show_alert: false,
+          cache_time: 3600
         })
       }
       // добавление задач
@@ -219,7 +263,8 @@ bot.on('callback_query', async (query) => {
         bot.sendMessage(chatId, 'Введите название задачи. Начните со слов "Я буду", например "Я буду играть на гитаре"')
        
         await bot.answerCallbackQuery(query.id, {
-          show_alert: false
+          show_alert: false,
+          cache_time: 3600
           })
       }
       // выбор конкретной задачи 
@@ -231,7 +276,8 @@ bot.on('callback_query', async (query) => {
           }
         })
         await bot.answerCallbackQuery(query.id, {
-          show_alert: false
+          show_alert: false,
+          cache_time: 3600
         })
       }
       // удаление задачи 
@@ -248,32 +294,35 @@ bot.on('callback_query', async (query) => {
           inline_keyboard: keyboardStart
           }})
         await bot.answerCallbackQuery(query.id, {
-          show_alert: false
+          show_alert: false,
+          cache_time: 3600
         })
       }
       // начать выполнение задачи 
       if (query.data.indexOf('strDuty',0) == 0) {
         let message = ''
         let keyBoard = []
-        let responseCheck = await req_check_Active(checkUser[0].id)
-        if (!responseCheck.length) {
+        let responseCheck = await req_check_Active(checkUser.user[0].id)
+        if (!responseCheck.active.length) {
           let date = Date.now() + timeZoneMs
           let result = await req_add_Timing(Number(query.data.slice(7)), date)
           let thisDuty = await req_getOne_Duty(Number(query.data.slice(7)))
-          if (result && thisDuty.length) {
-              message = `Вы начали выполнение задачи "${thisDuty[0].duty_name}": ${getUserTime(date)} `
+          if (thisDuty.isOk && result.isOk ) {
+            if (thisDuty.duty.length) {
+              message = `Вы начали выполнение задачи "${thisDuty.duty[0].duty_name}": ${getUserTime(date)} `
+            } else {
+              message = 'что-то пошло не так'
+            }
           } else {
-            message = 'что-то пошло не так'
+            message = 'Ошибка сервера. Попробуйте позднее'
           }
           keyBoard = await getDutyMenu(query.data.slice(7))
         } else {
-          let {hours, minutes} =  getTimeString((Date.now() + timeZoneMs - responseCheck[0].dutystart))
-        //  let hours = Math.floor((Date.now() - responseCheck[0].dutystart)/3600000)
-        //  let minutes = (Math.floor((Date.now() - responseCheck[0].dutystart)/60000)) - hours*60
+          let {hours, minutes} =  getTimeString((Date.now() + timeZoneMs - responseCheck.active[0].dutystart))
           message = `
-          сначала завершите задачу "${responseCheck[0].dutyname}", начатую ${hours} час(-ов) ${minutes} минут назад
+          сначала завершите задачу "${responseCheck.active[0].dutyname}", начатую ${hours} час(-ов) ${minutes} минут назад
           `
-          keyBoard = await getDutyMenu(responseCheck[0].dutyid.toString())
+          keyBoard = await getDutyMenu(responseCheck.active[0].dutyid.toString())
         }
         bot.sendMessage(chatId, message, { 
           reply_markup: {
@@ -281,7 +330,8 @@ bot.on('callback_query', async (query) => {
           }})
 
         await bot.answerCallbackQuery(query.id, {
-            show_alert: false
+            show_alert: false,
+            cache_time: 3600
           })
       }
       // закончить задачу
@@ -289,25 +339,25 @@ bot.on('callback_query', async (query) => {
         let message = ''
         let keyBoard = []
         let date = Date.now() + timeZoneMs
-        const activeDuties = await req_check_Active(checkUser[0].id)
-        if (!activeDuties.length) {
+        const activeDuties = await req_check_Active(checkUser.user[0].id)
+        if (!activeDuties.active.length) {
           message = 'у вас нет активных задач'
           keyBoard = await getDutyMenu(query.data.slice(7))
         } else {
-          if (activeDuties[0].dutyid ==  Number(query.data.slice(7))) {
-            // console.log(activeDuties);
-            let result = await req_fin_Timing(activeDuties[0].timingid, date)
-            if (result) {
+          if (activeDuties.active[0].dutyid ==  Number(query.data.slice(7))) {
+
+            let result = await req_fin_Timing(activeDuties.active[0].timingid, date)
+            if (result.isOk) {
               message = `
-              Вы закончили выполнение задачи "${activeDuties[0].dutyname}"  ${getUserTime(date)}
+              Вы закончили выполнение задачи "${activeDuties.active[0].dutyname}"  ${getUserTime(date)}
               `
               } else {
                 message = 'что-то пошло не так'
             }
             keyBoard = keyboardStart
           } else {
-            message = `сначала завершите выполнение задачи "${activeDuties[0].dutyname}"`
-            keyBoard = await getDutyMenu(activeDuties[0].dutyid.toString())
+            message = `сначала завершите выполнение задачи "${activeDuties.active[0].dutyname}"`
+            keyBoard = await getDutyMenu(activeDuties.active[0].dutyid.toString())
           }
         }
         bot.sendMessage(chatId, message, { 
@@ -315,7 +365,8 @@ bot.on('callback_query', async (query) => {
           inline_keyboard: keyBoard
           }})
         await bot.answerCallbackQuery(query.id, {
-            show_alert: false
+            show_alert: false,
+            cache_time: 3600
           })
       }
       // статистика по задаче 
@@ -327,15 +378,16 @@ bot.on('callback_query', async (query) => {
           inline_keyboard: keyBoardStat
           }})
         await bot.answerCallbackQuery(query.id, {
-          show_alert: false
+          show_alert: false,
+          cache_time: 3600
           })
       }
       if (query.data.indexOf('stat', 0) == 0) {
-        let message = await getOneStat(checkUser[0].id, query.data.slice(4,5))
+        let message = await getOneStat(checkUser.user[0].id, query.data.slice(4,5))
         bot.sendMessage(chatId, message )
         await bot.answerCallbackQuery(query.id, {
-          show_alert: false
-        })
+          show_alert: false,
+          cache_time: 3600        })
       }
     }
   });

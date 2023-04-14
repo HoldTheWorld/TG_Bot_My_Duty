@@ -10,8 +10,8 @@ const wToken = process.env.WEATHER_KEY
 
 const getDutyMenu = async function(dutyId) {
   let chosenDuty = await req_getOne_Duty(dutyId)
-  // console.log(chosenDuty);
-  let dutyName = chosenDuty[0].duty_name
+  console.log(chosenDuty);
+  let dutyName = chosenDuty.duty[0].duty_name
   let keyboardDutiesActions = [
     [{
       id: 'delDuty',
@@ -122,7 +122,6 @@ const getOneStat = async function(userId, period) {
   console.log("date yesterday ====>" + moment().hour(0).minute(0).seconds(0).subtract(1, 'days'));
   let message = `${periodName} Вы выполняли \n`
   let list = await req_get_One_Timing(userId)
-
   /*
   {
     id: id,
@@ -130,33 +129,38 @@ const getOneStat = async function(userId, period) {
     duration: duration
   }
   */
- 
-  list.forEach(tim => {
-    let ind = duties.findIndex(d => d.id == tim.dutyid)
-    let statTime = 0
-  // console.log(`===> task ${tim.dutyname} , start ${tim.dutystart}, end ${tim.dutyfinish} , start moment ${startMoment}`)
-    if (tim.dutyfinish > startMoment ) {
-      // console.log(`===> task ${tim.dutyname} taken into account`)
-      if (tim.dutystart < startMoment) { // начало задачи в предыдущем периоде
-          statTime = tim.dutyfinish - startMoment
-      } else { // начало задачи в текущем периоде
-        statTime = tim.dutyfinish - tim.dutystart
+  if (list.isOk) {
+    if (list.timing.length) {
+      list.timing.forEach(tim => {
+        let ind = duties.findIndex(d => d.id == tim.dutyid)
+        let statTime = 0
+      // console.log(`===> task ${tim.dutyname} , start ${tim.dutystart}, end ${tim.dutyfinish} , start moment ${startMoment}`)
+        if (tim.dutyfinish > startMoment ) {
+          // console.log(`===> task ${tim.dutyname} taken into account`)
+          if (tim.dutystart < startMoment) { // начало задачи в предыдущем периоде
+              statTime = tim.dutyfinish - startMoment
+          } else { // начало задачи в текущем периоде
+            statTime = tim.dutyfinish - tim.dutystart
+          }
+        if (ind < 0) {
+          // console.log( `===> task ${tim.dutyname} not added yet`)
+          // console.log(`===> ${tim.dutyname} added to stat: ${statTime}`)
+          duties.push({id: tim.dutyid, name: tim.dutyname, duration: statTime})
+        } else {
+          // console.log( `===> task ${tim.dutyname} WAS added already`)
+          // console.log(`===> ${tim.dutyname} added to stat: ${statTime}`)
+          duties[ind].duration = duties[ind].duration + statTime
+        }
       }
-    if (ind < 0) {
-      // console.log( `===> task ${tim.dutyname} not added yet`)
-      // console.log(`===> ${tim.dutyname} added to stat: ${statTime}`)
-      duties.push({id: tim.dutyid, name: tim.dutyname, duration: statTime})
+      })
+      duties.map(el => el.duration = getTimeString(el.duration) )
+      duties.forEach(el => message += `задачу "${el.name}" ${el.duration.hours} ч. ${el.duration.minutes} мин.; \n`)
     } else {
-      // console.log( `===> task ${tim.dutyname} WAS added already`)
-      // console.log(`===> ${tim.dutyname} added to stat: ${statTime}`)
-      duties[ind].duration = duties[ind].duration + statTime
+      message = 'За выбранные период вы ничего не делали.'
     }
+  } else {
+    message = 'Ошибка сервера. Попробуйте позднее'
   }
-  })
-  duties.map(el => el.duration = getTimeString(el.duration) )
-  duties.forEach(el => message += `задачу "${el.name}" ${el.duration.hours} ч. ${el.duration.minutes} мин.; \n`)
-  // console.log(message);
- 
   return message
 }
 
@@ -199,6 +203,5 @@ const getTimeZone = async function(lat, lon) {
     return {timeZone: 10800, temp: 0}
   }
 }
-
 
 export { getDutyMenu, getOneStat, getStatMenu, getTimeString, getUserTime, getTimeZone }

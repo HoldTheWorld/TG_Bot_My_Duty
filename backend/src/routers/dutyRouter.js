@@ -14,6 +14,7 @@ router.post('/', async (req, res) => {
 
 //get duties by user id
 router.get('/get/:id', async (req, res) => {
+  console.log('START GET ALL DUTIES');
   try {
     let duties = await Duty.findAll({ 
         raw: true,
@@ -21,6 +22,7 @@ router.get('/get/:id', async (req, res) => {
           user_id: req.params.id
         }
       })
+    console.log(duties);
     res.status(200).json(duties)
   } catch(err) {
     console.log(err)
@@ -56,9 +58,9 @@ router.delete('/delete/:id', async(req, res) => {
       }
     })
     if (result > 0) {
-      res.status(200)
+      res.status(200).json(result)
     } else {
-      res.status(400)
+      res.status(500).json(result)
     }
 
   } catch(err) {

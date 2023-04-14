@@ -10,30 +10,33 @@ const wToken = process.env.WEATHER_KEY
 
 const getDutyMenu = async function(dutyId) {
   let chosenDuty = await req_getOne_Duty(dutyId)
+  let keyboardDutiesActions = []
   console.log(chosenDuty);
-  let dutyName = chosenDuty.duty[0].duty_name
-  let keyboardDutiesActions = [
-    [{
-      id: 'delDuty',
-      text: `Удалить задачу "${dutyName}"`,
-      callback_data: `delDuty${Number(dutyId)}`
-      }],
-    [{
-      id: 'strDuty',
-      text: `Начать выполнять задачу "${dutyName}"`,
-      callback_data: `strDuty${Number(dutyId)}`
-      }],
-    [{
-      id: 'finDuty',
-      text: `Закончить выполнение задачи "${dutyName}"`,
-      callback_data: `finDuty${Number(dutyId)}`
-      }],
-    // [{
-    //   id: 'sttDuty',
-    //   text: `Посмотреть статистику задачи "${dutyName}"`,
-    //   callback_data: `sttDuty${Number(dutyId)}`
-    //   }]
-  ]
+  if (chosenDuty.duty.length) {
+    let dutyName = chosenDuty.duty[0].duty_name
+     keyboardDutiesActions = [
+      [{
+        id: 'delDuty',
+        text: `Удалить задачу "${dutyName}"`,
+        callback_data: `delDuty${Number(dutyId)}`
+        }],
+      [{
+        id: 'strDuty',
+        text: `Начать выполнять задачу "${dutyName}"`,
+        callback_data: `strDuty${Number(dutyId)}`
+        }],
+      [{
+        id: 'finDuty',
+        text: `Закончить выполнение задачи "${dutyName}"`,
+        callback_data: `finDuty${Number(dutyId)}`
+        }],
+      // [{
+      //   id: 'sttDuty',
+      //   text: `Посмотреть статистику задачи "${dutyName}"`,
+      //   callback_data: `sttDuty${Number(dutyId)}`
+      //   }]
+    ]
+  }
   return keyboardDutiesActions
 }
 

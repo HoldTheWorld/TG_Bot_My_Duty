@@ -1,0 +1,35 @@
+version: '3.9'
+
+services:
+  backend:
+    build: 
+      context: backend
+      dockerfile: ./Dockerfile
+    ports:
+      - '4321:4321'
+    expose:
+      - '4321'
+    restart: always
+
+  db:
+    image: 'postgres'
+    ports: 
+      - '1:5432'
+    environment:
+      POSTGRES_PASSWORD: ${PG_PASS}
+      POSTGRES_USER: ${PG_USER}
+    restart: always
+    volumes:
+      - data:/var/lib/postgresql/data
+  bot:
+    build: 
+      context: bot
+      dockerfile: ./Dockerfile
+    expose:
+      - '3001'
+    ports: 
+      - '3001:3001'
+    restart: always
+
+volumes:
+  data:
